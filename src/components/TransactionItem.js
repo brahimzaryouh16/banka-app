@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
+import { rf, isSmallDevice } from '../theme';
 
 const TYPE_CONFIG = {
-  credit:            { label: 'Crédit',           color: colors.success, sign: '+', icon: '↑' },
-  debit:             { label: 'Débit',             color: colors.danger,  sign: '-', icon: '↓' },
-  virement_entrant:  { label: 'Virement reçu',    color: colors.success, sign: '+', icon: '↗' },
-  virement_sortant:  { label: 'Virement émis',    color: colors.danger,  sign: '-', icon: '↙' },
+  credit:            { label: 'Credit',           color: colors.success, sign: '+' },
+  debit:             { label: 'Debit',             color: colors.danger,  sign: '-' },
+  virement_entrant:  { label: 'Incoming Transfer', color: colors.success, sign: '+' },
+  virement_sortant:  { label: 'Outgoing Transfer', color: colors.danger,  sign: '-' },
 };
 
 export default function TransactionItem({ transaction }) {
@@ -14,18 +15,11 @@ export default function TransactionItem({ transaction }) {
 
   return (
     <View style={styles.row}>
-      {/* Indicateur de type */}
-      <View style={[styles.iconBox, { backgroundColor: config.color + '20' }]}>
-        <Text style={[styles.icon, { color: config.color }]}>{config.icon}</Text>
-      </View>
-
-      {/* Infos */}
+      <View style={[styles.dot, { backgroundColor: config.color }]} />
       <View style={styles.info}>
         <Text style={styles.label} numberOfLines={1}>{transaction.label}</Text>
-        <Text style={styles.meta}>{config.label} • {transaction.date}</Text>
+        <Text style={styles.meta}>{config.label} &middot; {transaction.date}</Text>
       </View>
-
-      {/* Montant */}
       <Text style={[styles.amount, { color: config.color }]}>
         {config.sign}{transaction.amount.toLocaleString('fr-FR')} MAD
       </Text>
@@ -35,25 +29,39 @@ export default function TransactionItem({ transaction }) {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.card,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: isSmallDevice ? 10 : 14,
+    paddingHorizontal: 14,
+    backgroundColor: colors.surface,
+    marginHorizontal: 16,
+    marginVertical: 2,
+    borderRadius: 12,
   },
-  iconBox: {
-    width:        40,
-    height:       40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems:     'center',
-    marginRight:    12,
+  dot: {
+    width: isSmallDevice ? 6 : 8,
+    height: isSmallDevice ? 6 : 8,
+    borderRadius: 4,
+    marginRight: 10,
   },
-  icon:   { fontSize: 18, fontWeight: '700' },
-  info:   { flex: 1 },
-  label:  { fontSize: 14, fontWeight: '600', color: colors.text },
-  meta:   { fontSize: 12, color: colors.textLight, marginTop: 2 },
-  amount: { fontSize: 14, fontWeight: '700' },
+  info: {
+    flex: 1,
+  },
+  label: {
+    fontSize: rf(13),
+    fontWeight: '600',
+    color: colors.white,
+    letterSpacing: -0.1,
+  },
+  meta: {
+    fontSize: rf(11),
+    color: colors.textSecondary,
+    marginTop: 1,
+    fontWeight: '500',
+  },
+  amount: {
+    fontSize: rf(14),
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
 });

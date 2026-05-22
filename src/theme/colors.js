@@ -1,11 +1,16 @@
 export const colors = {
-  primary:     '#1B3A6B',   // Bleu marine (brand principal)
-  accent:      '#C9920A',   // Or (accents, highlights)
-  success:     '#1A6B3A',   // Vert (crédit, succès)
-  danger:      '#B32020',   // Rouge (débit, erreur, rejet)
-  background:  '#F4F6FA',   // Fond général
-  card:        '#FFFFFF',   // Fond des cartes
-  text:        '#1A1A2E',   // Texte principal
-  textLight:   '#6B7280',   // Texte secondaire
-  border:      '#E5E7EB',   // Bordures
+  bg: '#000000',
+  surface: '#1C1C1E',
+  surfaceLight: '#242426',
+  accent: '#E6E645',
+  accentDim: 'rgba(230, 230, 69, 0.15)',
+  white: '#FFFFFF',
+  text: '#FFFFFF',
+  textSecondary: '#8E8E93',
+  textTertiary: '#636366',
+  success: '#30D158',
+  danger: '#FF453A',
+  warning: '#FFD60A',
+  border: '#2C2C2E',
+  overlay: 'rgba(0,0,0,0.6)',
 };

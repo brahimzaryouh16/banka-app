@@ -1,29 +1,29 @@
 import React from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
+import { spacing, rf, isSmallDevice } from '../theme';
 import TransactionItem from '../components/TransactionItem';
 
-// Tâche 4 : Helper function to parse DD/MM/YYYY date strings into Date objects
 function parseDateDMY(dateStr) {
   const parts = dateStr.split('/');
   if (parts.length !== 3) return new Date(0);
-  const day   = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; // Months are 0-indexed
-  const year  = parseInt(parts[2], 10);
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const year = parseInt(parts[2], 10);
   return new Date(year, month, day);
 }
 
 export default function HistoryScreen({ accounts }) {
-  // Agréger toutes les transactions de tous les comptes
   const allTransactions = accounts
     .flatMap(acc =>
       acc.transactions.map(tx => ({
         ...tx,
         accountLabel: acc.label,
+        accountType: acc.type,
         uniqueKey: acc.id + '-' + tx.id,
       }))
     )
-    // Tâche 4 : Tri chronologique décroissant en parsant les dates DD/MM/YYYY
     .sort((a, b) => {
       const dateA = parseDateDMY(a.date);
       const dateB = parseDateDMY(b.date);
@@ -32,6 +32,13 @@ export default function HistoryScreen({ accounts }) {
 
   return (
     <View style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.safeTop}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Transaction History</Text>
+          <Text style={styles.subtitle}>{allTransactions.length} transaction{allTransactions.length !== 1 ? 's' : ''}</Text>
+        </View>
+      </SafeAreaView>
+
       <FlatList
         data={allTransactions}
         keyExtractor={(item) => item.uniqueKey}
@@ -42,24 +49,56 @@ export default function HistoryScreen({ accounts }) {
           </View>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>Aucune opération dans l'historique.</Text>
+          <Text style={styles.empty}>No transactions in history.</Text>
         }
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={styles.list}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container:  { flex: 1, backgroundColor: colors.background },
-  accountTag: {
-    fontSize:         11,
-    color:            colors.textLight,
-    paddingHorizontal:16,
-    paddingTop:       10,
-    paddingBottom:    2,
-    textTransform:    'uppercase',
-    letterSpacing:    0.6,
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
   },
-  empty: { padding: 30, textAlign: 'center', color: colors.textLight },
+  safeTop: {
+    backgroundColor: colors.bg,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: isSmallDevice ? spacing.md : spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  title: {
+    fontSize: rf(28),
+    fontWeight: '800',
+    color: colors.white,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: rf(13),
+    color: colors.textSecondary,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  list: {
+    paddingBottom: spacing.xl,
+  },
+  accountTag: {
+    fontSize: rf(10),
+    color: colors.textTertiary,
+    paddingHorizontal: spacing.md + 4,
+    paddingTop: 10,
+    paddingBottom: 3,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  empty: {
+    padding: 30,
+    textAlign: 'center',
+    color: colors.textTertiary,
+    fontSize: rf(13),
+  },
 });

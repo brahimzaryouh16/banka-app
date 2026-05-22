@@ -1,42 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
-
-// Icône selon le type de compte
-const TYPE_ICONS = {
-  courant:       '💳',
-  epargne:       '🏦',
-  professionnel: '💼',
-};
+import { rf, isSmallDevice } from '../theme';
 
 export default function AccountCard({ account, onPress }) {
   const isPositive = account.balance > 0;
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-      activeOpacity={0.75}
-    >
-      {/* En-tête : icône + label */}
-      <View style={styles.header}>
-        <Text style={styles.icon}>{TYPE_ICONS[account.type] || '🏦'}</Text>
-        <View style={styles.headerText}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.topRow}>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>
+            {account.type === 'courant' ? 'C' : account.type === 'epargne' ? 'E' : 'P'}
+          </Text>
+        </View>
+        <View style={styles.topText}>
           <Text style={styles.label}>{account.label}</Text>
           <Text style={styles.iban}>{account.iban}</Text>
         </View>
       </View>
 
-      {/* Séparateur */}
       <View style={styles.divider} />
 
-      {/* Solde */}
-      <View style={styles.balanceRow}>
-        <Text style={styles.balanceLabel}>Solde disponible</Text>
-        <Text style={[
-          styles.balance,
-          { color: isPositive ? colors.success : colors.danger }
-        ]}>
+      <View style={styles.balanceSection}>
+        <Text style={styles.balanceLabel}>Available balance</Text>
+        <Text style={[styles.balance, { color: isPositive ? colors.white : colors.danger }]}>
           {account.balance.toLocaleString('fr-FR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -44,9 +32,8 @@ export default function AccountCard({ account, onPress }) {
         </Text>
       </View>
 
-      {/* Footer : nombre de transactions */}
       <Text style={styles.txCount}>
-        {account.transactions.length} opération(s) enregistrée(s)
+        {account.transactions.length} transaction{account.transactions.length !== 1 ? 's' : ''}
       </Text>
     </TouchableOpacity>
   );
@@ -54,63 +41,71 @@ export default function AccountCard({ account, onPress }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
-    borderRadius:    16,
-    padding:         20,
-    marginHorizontal:16,
-    marginVertical:  8,
-    shadowColor:     '#000',
-    shadowOffset:    { width: 0, height: 3 },
-    shadowOpacity:   0.10,
-    shadowRadius:    6,
-    elevation:       4,
-    borderLeftWidth: 5,
-    borderLeftColor: colors.primary,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: isSmallDevice ? 14 : 20,
+    marginHorizontal: 16,
+    marginVertical: 5,
   },
-  header: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    marginBottom:   12,
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: isSmallDevice ? 10 : 14,
   },
-  icon: {
-    fontSize: 28,
-    marginRight: 12,
+  badge: {
+    width: isSmallDevice ? 34 : 40,
+    height: isSmallDevice ? 34 : 40,
+    borderRadius: 12,
+    backgroundColor: colors.accentDim,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
-  headerText: {
+  badgeText: {
+    fontSize: rf(15),
+    fontWeight: '800',
+    color: colors.accent,
+  },
+  topText: {
     flex: 1,
   },
   label: {
-    fontSize:   17,
+    fontSize: rf(15),
     fontWeight: '700',
-    color:      colors.text,
+    color: colors.white,
+    letterSpacing: -0.2,
   },
   iban: {
-    fontSize: 11,
-    color:    colors.textLight,
-    marginTop: 2,
+    fontSize: rf(10),
+    color: colors.textSecondary,
+    marginTop: 1,
+    letterSpacing: 0.3,
   },
   divider: {
-    height:          1,
+    height: 1,
     backgroundColor: colors.border,
-    marginBottom:    12,
+    marginBottom: isSmallDevice ? 10 : 14,
   },
-  balanceRow: {
-    flexDirection:  'row',
+  balanceSection: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems:     'center',
+    alignItems: 'center',
   },
   balanceLabel: {
-    fontSize: 13,
-    color:    colors.textLight,
+    fontSize: rf(12),
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
   balance: {
-    fontSize:   20,
+    fontSize: rf(20),
     fontWeight: '800',
+    letterSpacing: -0.3,
   },
   txCount: {
-    fontSize:  11,
-    color:     colors.textLight,
-    marginTop: 10,
+    fontSize: rf(10),
+    color: colors.textTertiary,
+    marginTop: isSmallDevice ? 6 : 10,
     textAlign: 'right',
+    fontWeight: '500',
   },
 });

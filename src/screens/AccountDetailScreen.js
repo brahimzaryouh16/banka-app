@@ -3,78 +3,68 @@ import {
   View, Text, StyleSheet, FlatList,
   TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
+import { spacing, borderRadius, rf, isSmallDevice } from '../theme';
 import TransactionItem from '../components/TransactionItem';
 
 export default function AccountDetailScreen({ route, navigation, accounts, onDebit, onCredit }) {
   const { accountId } = route.params;
-
-  // Récupérer le compte depuis la prop accounts (pas les params — pourquoi ?)
-  // Réponse : car les params sont un snapshot statique au moment de la navigation.
-  // Si le solde change (après débit/crédit), les params ne se mettent pas à jour
-  // mais accounts (venant de useState dans App.js) oui.
   const account = accounts.find(a => a.id === accountId);
 
-  const [amount, setAmount]   = useState('');
-  const [label,  setLabel]    = useState('');
-  const [mode,   setMode]     = useState(null); // 'debit' | 'credit' | null
+  const [amount, setAmount] = useState('');
+  const [label, setLabel] = useState('');
+  const [mode, setMode] = useState(null);
 
   if (!account) {
-    return <Text style={{ padding: 20 }}>Compte introuvable.</Text>;
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: colors.textSecondary }}>Account not found.</Text>
+      </View>
+    );
   }
 
-  // Tâche 3 : Indicateur visuel si solde < 1000 MAD
   const isLowBalance = account.balance < 1000;
-  // Tâche 3 : Désactivation du bouton débit si solde = 0
   const isZeroBalance = account.balance === 0;
 
   const handleOperation = () => {
     const numAmount = parseFloat(amount);
 
-    // Validations
     if (!label.trim()) {
-      Alert.alert('Champ manquant', 'Veuillez saisir un libellé.');
+      Alert.alert('Missing field', 'Please enter a label.');
       return;
     }
     if (isNaN(numAmount) || numAmount <= 0) {
-      Alert.alert('Montant invalide', 'Veuillez saisir un montant positif.');
+      Alert.alert('Invalid amount', 'Please enter a positive amount.');
       return;
     }
     if (mode === 'debit' && numAmount > account.balance) {
       Alert.alert(
-        'Solde insuffisant',
-        `Votre solde est de ${account.balance.toLocaleString('fr-FR')} MAD. Opération rejetée.`
+        'Insufficient balance',
+        `Your balance is ${account.balance.toLocaleString('fr-FR')} MAD. Operation rejected.`
       );
       return;
     }
 
-    // Tâche 3 : Message de confirmation différent selon le type d'opération
-    const confirmTitle = mode === 'debit'
-      ? '⚠️ Confirmer le Débit'
-      : '✅ Confirmer le Crédit';
+    const confirmTitle = mode === 'debit' ? 'Confirm Debit' : 'Confirm Credit';
 
     const confirmMessage = mode === 'debit'
-      ? `Vous allez débiter ${numAmount.toLocaleString('fr-FR')} MAD de votre compte.\nLibellé : "${label}"\n\nVotre nouveau solde sera de ${(account.balance - numAmount).toLocaleString('fr-FR')} MAD.`
-      : `Vous allez créditer ${numAmount.toLocaleString('fr-FR')} MAD sur votre compte.\nLibellé : "${label}"\n\nVotre nouveau solde sera de ${(account.balance + numAmount).toLocaleString('fr-FR')} MAD.`;
+      ? `You are about to debit ${numAmount.toLocaleString('fr-FR')} MAD.\nLabel: "${label}"\n\nNew balance: ${(account.balance - numAmount).toLocaleString('fr-FR')} MAD.`
+      : `You are about to credit ${numAmount.toLocaleString('fr-FR')} MAD.\nLabel: "${label}"\n\nNew balance: ${(account.balance + numAmount).toLocaleString('fr-FR')} MAD.`;
 
-    // Confirmation avant exécution
-    Alert.alert(
-      confirmTitle,
-      confirmMessage,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Confirmer',
-          onPress: () => {
-            if (mode === 'debit') onDebit(accountId, numAmount, label);
-            else                  onCredit(accountId, numAmount, label);
-            setAmount('');
-            setLabel('');
-            setMode(null);
-          },
+    Alert.alert(confirmTitle, confirmMessage, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Confirm',
+        onPress: () => {
+          if (mode === 'debit') onDebit(accountId, numAmount, label);
+          else onCredit(accountId, numAmount, label);
+          setAmount('');
+          setLabel('');
+          setMode(null);
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
@@ -88,99 +78,106 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
         renderItem={({ item }) => <TransactionItem transaction={item} />}
         ListHeaderComponent={
           <View>
-            {/* Solde du compte */}
-            <View style={[
-              styles.balanceBanner,
-              // Tâche 3 : Couleur du bandeau change si solde bas
-              isLowBalance && styles.balanceBannerLow
-            ]}>
-              <Text style={styles.accountName}>{account.label}</Text>
+            <SafeAreaView edges={['top']}>
+              <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                  <Text style={styles.backArrow}>←</Text>
+                </TouchableOpacity>
+                <View style={styles.headerInfo}>
+                  <Text style={styles.accountName}>{account.label}</Text>
+                  <Text style={styles.accountType}>
+                    {account.type === 'courant' ? 'Current Account' : account.type === 'epargne' ? 'Savings' : 'Professional'}
+                  </Text>
+                </View>
+              </View>
+            </SafeAreaView>
+
+            <View style={styles.balanceCard}>
+              <Text style={styles.balanceLabel}>Current Balance</Text>
               <Text style={styles.balance}>
                 {account.balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD
               </Text>
-              {/* Tâche 3 : Indicateur visuel de solde bas */}
               {isLowBalance && (
-                <View style={styles.lowBalanceWarning}>
-                  <Text style={styles.lowBalanceText}>
-                    ⚠️ Solde inférieur à 1 000 MAD
-                  </Text>
+                <View style={styles.warningBadge}>
+                  <Text style={styles.warningText}>Low balance</Text>
                 </View>
               )}
             </View>
 
-            {/* Boutons d'action */}
             <View style={styles.actionsRow}>
               <TouchableOpacity
-                style={[
-                  styles.actionBtn,
-                  { backgroundColor: isZeroBalance ? '#ccc' : colors.danger }
-                ]}
+                style={[styles.actionBtn, isZeroBalance && styles.actionBtnDisabled]}
                 onPress={() => {
                   if (isZeroBalance) {
-                    // Tâche 3 : Message si solde = 0
-                    Alert.alert('Solde nul', 'Votre solde est à 0 MAD. Impossible d\'effectuer un débit.');
+                    Alert.alert('Zero balance', 'Your balance is 0 MAD. Cannot debit.');
                     return;
                   }
                   setMode(mode === 'debit' ? null : 'debit');
                 }}
                 disabled={isZeroBalance}
               >
-                <Text style={styles.actionBtnText}>↓ Débit</Text>
+                <Text style={styles.actionIcon}>−</Text>
+                <Text style={styles.actionLabel}>Debit</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: colors.success }]}
+                style={[styles.actionBtn, { borderColor: colors.success }]}
                 onPress={() => setMode(mode === 'credit' ? null : 'credit')}
               >
-                <Text style={styles.actionBtnText}>↑ Crédit</Text>
+                <Text style={[styles.actionIcon, { color: colors.success }]}>+</Text>
+                <Text style={[styles.actionLabel, { color: colors.success }]}>Credit</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+                style={[styles.actionBtn, { borderColor: colors.accent }]}
                 onPress={() => navigation.navigate('Transfer', { fromAccountId: accountId })}
               >
-                <Text style={styles.actionBtnText}>↗ Virement</Text>
+                <Text style={[styles.actionIcon, { color: colors.accent }]}>→</Text>
+                <Text style={[styles.actionLabel, { color: colors.accent }]}>Transfer</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Formulaire inline débit/crédit */}
             {mode && (
               <View style={styles.form}>
                 <Text style={styles.formTitle}>
-                  {mode === 'debit' ? '↓ Nouveau Débit' : '↑ Nouveau Crédit'}
+                  {mode === 'debit' ? 'New Debit' : 'New Credit'}
                 </Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Libellé de l'opération"
-                  value={label}
-                  onChangeText={setLabel}
-                  placeholderTextColor={colors.textLight}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Montant en MAD"
-                  value={amount}
-                  onChangeText={setAmount}
-                  keyboardType="decimal-pad"
-                  placeholderTextColor={colors.textLight}
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Transaction label"
+                    placeholderTextColor={colors.textTertiary}
+                    value={label}
+                    onChangeText={setLabel}
+                  />
+                </View>
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Amount in MAD"
+                    placeholderTextColor={colors.textTertiary}
+                    value={amount}
+                    onChangeText={setAmount}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
                 <TouchableOpacity
                   style={[
                     styles.submitBtn,
-                    { backgroundColor: mode === 'debit' ? colors.danger : colors.success }
+                    { backgroundColor: mode === 'debit' ? colors.danger : colors.success },
                   ]}
                   onPress={handleOperation}
                 >
-                  <Text style={styles.submitBtnText}>Valider</Text>
+                  <Text style={styles.submitBtnText}>Confirm</Text>
                 </TouchableOpacity>
               </View>
             )}
 
-            <Text style={styles.historyTitle}>Historique des opérations</Text>
+            <Text style={styles.historyTitle}>Transaction History</Text>
           </View>
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>Aucune opération enregistrée.</Text>
+          <Text style={styles.empty}>No transactions recorded.</Text>
         }
       />
     </KeyboardAvoidingView>
@@ -188,76 +185,159 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
 }
 
 const styles = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: colors.background },
-  balanceBanner:{
-    backgroundColor: colors.primary,
-    padding:         24,
-    alignItems:      'center',
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
   },
-  // Tâche 3 : Style du bandeau quand solde bas
-  balanceBannerLow: {
-    backgroundColor: '#8B3A3A',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: isSmallDevice ? spacing.xs : spacing.sm,
   },
-  accountName:  { color: 'rgba(255,255,255,0.75)', fontSize: 14 },
-  balance:      { color: '#fff', fontSize: 34, fontWeight: '800', marginTop: 4 },
-  // Tâche 3 : Style de l'avertissement solde bas
-  lowBalanceWarning: {
-    marginTop:       10,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius:    20,
+  backBtn: {
+    width: isSmallDevice ? 34 : 40,
+    height: isSmallDevice ? 34 : 40,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  lowBalanceText: {
-    color:    '#FFD93D',
-    fontSize: 12,
+  backArrow: {
+    fontSize: rf(18),
+    color: colors.white,
+    fontWeight: '300',
+  },
+  headerInfo: {
+    flex: 1,
+  },
+  accountName: {
+    fontSize: rf(20),
+    fontWeight: '700',
+    color: colors.white,
+    letterSpacing: -0.3,
+  },
+  accountType: {
+    fontSize: rf(12),
+    color: colors.textSecondary,
+    marginTop: 1,
+    fontWeight: '500',
+  },
+  balanceCard: {
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.xs,
+    borderRadius: 20,
+    padding: isSmallDevice ? 14 : spacing.lg,
+    alignItems: 'center',
+  },
+  balanceLabel: {
+    fontSize: rf(12),
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  balance: {
+    fontSize: rf(36),
+    fontWeight: '800',
+    color: colors.white,
+    letterSpacing: -0.5,
+    marginTop: 2,
+  },
+  warningBadge: {
+    marginTop: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    backgroundColor: colors.accentDim,
+    borderRadius: borderRadius.pill,
+  },
+  warningText: {
+    fontSize: rf(11),
+    color: colors.accent,
     fontWeight: '600',
   },
-  actionsRow:   {
-    flexDirection:  'row',
+  actionsRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    padding:        16,
-    gap:            8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: isSmallDevice ? 8 : spacing.md,
+    gap: 6,
   },
-  actionBtn:    {
-    flex:           1,
-    paddingVertical: 12,
-    borderRadius:   10,
-    alignItems:     'center',
+  actionBtn: {
+    flex: 1,
+    paddingVertical: isSmallDevice ? 10 : 14,
+    borderRadius: borderRadius.pill,
+    borderWidth: 1.5,
+    borderColor: colors.danger,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
   },
-  actionBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  actionBtnDisabled: {
+    opacity: 0.35,
+  },
+  actionIcon: {
+    fontSize: rf(18),
+    fontWeight: '700',
+    color: colors.danger,
+    marginBottom: 1,
+  },
+  actionLabel: {
+    fontSize: rf(11),
+    fontWeight: '600',
+    color: colors.danger,
+  },
   form: {
-    backgroundColor: colors.card,
-    margin:          16,
-    borderRadius:    12,
-    padding:         16,
-    shadowColor:     '#000',
-    shadowOffset:    { width: 0, height: 2 },
-    shadowOpacity:   0.08,
-    shadowRadius:    4,
-    elevation:       3,
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 16,
+    padding: isSmallDevice ? 14 : spacing.lg,
   },
-  formTitle:    { fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 12 },
+  formTitle: {
+    fontSize: rf(16),
+    fontWeight: '700',
+    color: colors.white,
+    marginBottom: spacing.md,
+    letterSpacing: -0.2,
+  },
+  inputWrapper: {
+    backgroundColor: colors.bg,
+    borderRadius: borderRadius.md,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   input: {
-    borderWidth:   1,
-    borderColor:   colors.border,
-    borderRadius:  8,
-    paddingHorizontal: 12,
-    paddingVertical:   10,
-    fontSize:      14,
-    color:         colors.text,
-    marginBottom:  10,
-    backgroundColor: colors.background,
+    paddingHorizontal: 14,
+    paddingVertical: isSmallDevice ? 10 : 12,
+    fontSize: rf(14),
+    color: colors.white,
+    fontWeight: '500',
   },
-  submitBtn:    { borderRadius: 8, paddingVertical: 12, alignItems: 'center' },
-  submitBtnText:{ color: '#fff', fontWeight: '700', fontSize: 15 },
+  submitBtn: {
+    borderRadius: borderRadius.pill,
+    paddingVertical: isSmallDevice ? 12 : 14,
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  submitBtnText: {
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: rf(15),
+  },
   historyTitle: {
-    fontSize:         13,
-    color:            colors.textLight,
-    paddingHorizontal:16,
-    paddingVertical:  12,
-    textTransform:    'uppercase',
-    letterSpacing:    0.8,
+    fontSize: rf(12),
+    color: colors.textSecondary,
+    paddingHorizontal: spacing.md + 4,
+    paddingVertical: isSmallDevice ? 6 : spacing.sm + 2,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
-  empty: { padding: 20, textAlign: 'center', color: colors.textLight },
+  empty: {
+    padding: 24,
+    textAlign: 'center',
+    color: colors.textTertiary,
+    fontSize: rf(13),
+  },
 });

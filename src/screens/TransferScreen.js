@@ -3,64 +3,62 @@ import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   Alert, KeyboardAvoidingView, Platform, ScrollView
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
+import { spacing, borderRadius, rf, isSmallDevice } from '../theme';
 
-// Tâche 2 : Implémentation complète de TransferScreen
 export default function TransferScreen({ route, navigation, accounts, onTransfer }) {
   const { fromAccountId } = route.params;
-
-  // Compte source pré-sélectionné
   const sourceAccount = accounts.find(a => a.id === fromAccountId);
-
-  // Comptes destinataires possibles (tous sauf le source)
   const otherAccounts = accounts.filter(a => a.id !== fromAccountId);
 
   const [selectedDestId, setSelectedDestId] = useState(null);
-  const [amount, setAmount]                 = useState('');
-  const [label, setLabel]                   = useState('');
+  const [amount, setAmount] = useState('');
+  const [label, setLabel] = useState('');
 
   if (!sourceAccount) {
-    return <Text style={{ padding: 20 }}>Compte source introuvable.</Text>;
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: colors.textSecondary }}>Source account not found.</Text>
+      </View>
+    );
   }
 
   const handleTransfer = () => {
     const numAmount = parseFloat(amount);
 
-    // Validations
     if (!selectedDestId) {
-      Alert.alert('Destinataire manquant', 'Veuillez sélectionner un compte destinataire.');
+      Alert.alert('Missing destination', 'Please select a destination account.');
       return;
     }
     if (!label.trim()) {
-      Alert.alert('Champ manquant', 'Veuillez saisir un libellé pour le virement.');
+      Alert.alert('Missing field', 'Please enter a transfer label.');
       return;
     }
     if (isNaN(numAmount) || numAmount <= 0) {
-      Alert.alert('Montant invalide', 'Veuillez saisir un montant positif.');
+      Alert.alert('Invalid amount', 'Please enter a positive amount.');
       return;
     }
-    // Règle métier : rejet si solde insuffisant
     if (numAmount > sourceAccount.balance) {
       Alert.alert(
-        'Solde insuffisant',
-        `Votre solde sur ${sourceAccount.label} est de ${sourceAccount.balance.toLocaleString('fr-FR')} MAD.\nLe virement de ${numAmount.toLocaleString('fr-FR')} MAD est rejeté.`
+        'Insufficient balance',
+        `Your ${sourceAccount.label} balance is ${sourceAccount.balance.toLocaleString('fr-FR')} MAD. Transfer rejected.`
       );
       return;
     }
 
     const destAccount = accounts.find(a => a.id === selectedDestId);
 
-    // Confirmation
     Alert.alert(
-      '↗ Confirmer le Virement',
-      `De : ${sourceAccount.label}\nVers : ${destAccount.label}\nMontant : ${numAmount.toLocaleString('fr-FR')} MAD\nLibellé : "${label}"`,
+      'Confirm Transfer',
+      `From: ${sourceAccount.label}\nTo: ${destAccount.label}\nAmount: ${numAmount.toLocaleString('fr-FR')} MAD\nLabel: "${label}"`,
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Confirmer',
+          text: 'Confirm',
           onPress: () => {
             onTransfer(fromAccountId, selectedDestId, numAmount, label);
-            Alert.alert('Virement effectué', `${numAmount.toLocaleString('fr-FR')} MAD transférés vers ${destAccount.label}.`);
+            Alert.alert('Transfer complete', `${numAmount.toLocaleString('fr-FR')} MAD sent to ${destAccount.label}.`);
             setAmount('');
             setLabel('');
             setSelectedDestId(null);
@@ -76,20 +74,36 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <SafeAreaView edges={['top']} style={styles.safeTop}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Text style={styles.backArrow}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.topBarTitle}>Transfer</Text>
+          <View style={[styles.backBtn, { opacity: 0 }]} />
+        </View>
+      </SafeAreaView>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Source Account Banner */}
-        <View style={styles.sourceBanner}>
-          <Text style={styles.sourceLabel}>Compte source</Text>
-          <Text style={styles.sourceName}>{sourceAccount.label}</Text>
-          <Text style={styles.sourceBalance}>
-            Solde : {sourceAccount.balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD
-          </Text>
-          <Text style={styles.sourceIban}>{sourceAccount.iban}</Text>
+        <View style={styles.sourceCard}>
+          <Text style={styles.sourceLabel}>From</Text>
+          <View style={styles.sourceRow}>
+            <View style={styles.sourceBadge}>
+              <Text style={styles.sourceBadgeText}>
+                {sourceAccount.type === 'courant' ? 'C' : sourceAccount.type === 'epargne' ? 'E' : 'P'}
+              </Text>
+            </View>
+            <View style={styles.sourceInfo}>
+              <Text style={styles.sourceName}>{sourceAccount.label}</Text>
+              <Text style={styles.sourceBalance}>
+                {sourceAccount.balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD
+              </Text>
+            </View>
+          </View>
         </View>
 
-        {/* Destination Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Compte destinataire</Text>
+          <Text style={styles.sectionTitle}>Destination Account</Text>
           {otherAccounts.map(acc => (
             <TouchableOpacity
               key={acc.id}
@@ -116,7 +130,7 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
                   </Text>
                   <Text style={styles.destIban}>{acc.iban}</Text>
                   <Text style={styles.destBalance}>
-                    Solde : {acc.balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD
+                    {acc.balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD
                   </Text>
                 </View>
               </View>
@@ -124,30 +138,30 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
           ))}
         </View>
 
-        {/* Transfer Form */}
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Détails du virement</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Libellé du virement"
-            value={label}
-            onChangeText={setLabel}
-            placeholderTextColor={colors.textLight}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Montant en MAD"
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            placeholderTextColor={colors.textLight}
-          />
+          <Text style={styles.sectionTitle}>Transfer Details</Text>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Transfer label"
+              placeholderTextColor={colors.textTertiary}
+              value={label}
+              onChangeText={setLabel}
+            />
+          </View>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Amount in MAD"
+              placeholderTextColor={colors.textTertiary}
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="decimal-pad"
+            />
+          </View>
 
-          <TouchableOpacity
-            style={styles.transferBtn}
-            onPress={handleTransfer}
-          >
-            <Text style={styles.transferBtnText}>↗ Effectuer le virement</Text>
+          <TouchableOpacity style={styles.transferBtn} onPress={handleTransfer}>
+            <Text style={styles.transferBtnText}>Send Transfer</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -156,143 +170,189 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
 }
 
 const styles = StyleSheet.create({
-  container:     { flex: 1, backgroundColor: colors.background },
-  scrollContent: { paddingBottom: 40 },
-
-  // Source banner
-  sourceBanner: {
-    backgroundColor: colors.primary,
-    padding:         24,
-    alignItems:      'center',
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  safeTop: {
+    backgroundColor: colors.bg,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: isSmallDevice ? spacing.xs : spacing.sm,
+  },
+  backBtn: {
+    width: isSmallDevice ? 34 : 40,
+    height: isSmallDevice ? 34 : 40,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backArrow: {
+    fontSize: rf(18),
+    color: colors.white,
+    fontWeight: '300',
+  },
+  topBarTitle: {
+    fontSize: rf(17),
+    fontWeight: '700',
+    color: colors.white,
+    letterSpacing: -0.2,
+  },
+  scrollContent: {
+    paddingBottom: spacing.xl,
+  },
+  sourceCard: {
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    borderRadius: 16,
+    padding: isSmallDevice ? 14 : spacing.lg,
   },
   sourceLabel: {
-    color:    'rgba(255,255,255,0.6)',
-    fontSize: 12,
+    fontSize: rf(10),
+    color: colors.textTertiary,
+    fontWeight: '600',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  sourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sourceBadge: {
+    width: isSmallDevice ? 38 : 44,
+    height: isSmallDevice ? 38 : 44,
+    borderRadius: 14,
+    backgroundColor: colors.accentDim,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  sourceBadgeText: {
+    fontSize: rf(17),
+    fontWeight: '800',
+    color: colors.accent,
+  },
+  sourceInfo: {
+    flex: 1,
   },
   sourceName: {
-    color:      '#fff',
-    fontSize:   22,
-    fontWeight: '800',
-    marginTop:  4,
+    fontSize: rf(16),
+    fontWeight: '700',
+    color: colors.white,
+    letterSpacing: -0.2,
   },
   sourceBalance: {
-    color:    'rgba(255,255,255,0.85)',
-    fontSize: 16,
-    marginTop: 6,
+    fontSize: rf(14),
     fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: 1,
   },
-  sourceIban: {
-    color:    'rgba(255,255,255,0.5)',
-    fontSize: 11,
-    marginTop: 4,
-  },
-
-  // Sections
   section: {
-    padding: 16,
+    padding: spacing.md,
   },
   formSection: {
-    paddingHorizontal: 16,
-    paddingBottom:     16,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
   sectionTitle: {
-    fontSize:      13,
-    color:         colors.textLight,
+    fontSize: rf(12),
+    color: colors.textSecondary,
+    fontWeight: '600',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom:  12,
+    marginBottom: 10,
   },
-
-  // Destination cards
   destCard: {
-    backgroundColor: colors.card,
-    borderRadius:    12,
-    padding:         16,
-    marginBottom:    10,
-    borderWidth:     2,
-    borderColor:     colors.border,
-    shadowColor:     '#000',
-    shadowOffset:    { width: 0, height: 1 },
-    shadowOpacity:   0.05,
-    shadowRadius:    3,
-    elevation:       2,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: isSmallDevice ? 12 : 16,
+    marginBottom: 6,
+    borderWidth: 1.5,
+    borderColor: colors.border,
   },
   destCardSelected: {
-    borderColor:     colors.primary,
-    backgroundColor: '#EBF0F9',
+    borderColor: colors.accent,
+    backgroundColor: colors.surfaceLight,
   },
   destRow: {
     flexDirection: 'row',
-    alignItems:    'center',
+    alignItems: 'center',
   },
   radio: {
-    width:        22,
-    height:       22,
+    width: isSmallDevice ? 20 : 22,
+    height: isSmallDevice ? 20 : 22,
     borderRadius: 11,
-    borderWidth:  2,
-    borderColor:  colors.border,
+    borderWidth: 2,
+    borderColor: colors.textTertiary,
     justifyContent: 'center',
-    alignItems:     'center',
-    marginRight:    12,
+    alignItems: 'center',
+    marginRight: 10,
   },
   radioSelected: {
-    borderColor: colors.primary,
+    borderColor: colors.accent,
   },
   radioDot: {
-    width:           12,
-    height:          12,
-    borderRadius:    6,
-    backgroundColor: colors.primary,
+    width: isSmallDevice ? 10 : 12,
+    height: isSmallDevice ? 10 : 12,
+    borderRadius: 6,
+    backgroundColor: colors.accent,
   },
   destInfo: {
     flex: 1,
   },
   destName: {
-    fontSize:   15,
+    fontSize: rf(14),
     fontWeight: '700',
-    color:      colors.text,
+    color: colors.white,
+    letterSpacing: -0.1,
   },
   destNameSelected: {
-    color: colors.primary,
+    color: colors.accent,
   },
   destIban: {
-    fontSize: 11,
-    color:    colors.textLight,
-    marginTop: 2,
+    fontSize: rf(10),
+    color: colors.textSecondary,
+    marginTop: 1,
+    letterSpacing: 0.3,
   },
   destBalance: {
-    fontSize:   13,
-    color:      colors.success,
-    marginTop:  4,
-    fontWeight: '600',
+    fontSize: rf(12),
+    color: colors.textTertiary,
+    marginTop: 3,
+    fontWeight: '500',
   },
-
-  // Form inputs
+  inputWrapper: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   input: {
-    borderWidth:       1,
-    borderColor:       colors.border,
-    borderRadius:      8,
-    paddingHorizontal: 12,
-    paddingVertical:   10,
-    fontSize:          14,
-    color:             colors.text,
-    marginBottom:      10,
-    backgroundColor:   colors.card,
+    paddingHorizontal: 14,
+    paddingVertical: isSmallDevice ? 10 : 12,
+    fontSize: rf(14),
+    color: colors.white,
+    fontWeight: '500',
   },
-
-  // Transfer button
   transferBtn: {
-    backgroundColor: colors.primary,
-    borderRadius:    10,
-    paddingVertical: 14,
-    alignItems:      'center',
-    marginTop:       6,
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.pill,
+    paddingVertical: isSmallDevice ? 14 : 16,
+    alignItems: 'center',
+    marginTop: 4,
   },
   transferBtnText: {
-    color:      '#fff',
-    fontWeight: '700',
-    fontSize:   16,
+    color: colors.bg,
+    fontWeight: '800',
+    fontSize: rf(15),
+    letterSpacing: -0.2,
   },
 });
