@@ -69,8 +69,7 @@ banka-app/
 │       └── index.js                # Espacements, typographie, responsive
 ├── assets/                         # Icônes et images
 ├── app.json                        # Configuration Expo
-├── README.md
-└── rapport.md                      # Rapport de projet
+└── README.md
 ```
 
 ---
