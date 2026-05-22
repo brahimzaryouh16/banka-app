@@ -23,7 +23,7 @@ export default function AccountCard({ account, onPress }) {
       <View style={styles.divider} />
 
       <View style={styles.balanceSection}>
-        <Text style={styles.balanceLabel}>Available balance</Text>
+        <Text style={styles.balanceLabel}>Solde disponible</Text>
         <Text style={[styles.balance, { color: isPositive ? colors.white : colors.danger }]}>
           {account.balance.toLocaleString('fr-FR', {
             minimumFractionDigits: 2,
@@ -33,7 +33,7 @@ export default function AccountCard({ account, onPress }) {
       </View>
 
       <Text style={styles.txCount}>
-        {account.transactions.length} transaction{account.transactions.length !== 1 ? 's' : ''}
+        {account.transactions.length} opération{account.transactions.length !== 1 ? 's' : ''}
       </Text>
     </TouchableOpacity>
   );

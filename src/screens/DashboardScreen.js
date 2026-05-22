@@ -10,16 +10,16 @@ export default function DashboardScreen({ navigation, accounts, onReset }) {
 
   const handleReset = () => {
     Alert.alert(
-      'Reset Accounts',
-      'Are you sure you want to reset all accounts to their initial state? All transactions will be lost.',
+      'Réinitialiser',
+      'Êtes-vous sûr de vouloir réinitialiser tous les comptes à leur état initial ? Toutes les opérations seront perdues.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Reset',
+          text: 'Réinitialiser',
           style: 'destructive',
           onPress: () => {
             onReset();
-            Alert.alert('Success', 'All accounts have been reset.');
+            Alert.alert('Succès', 'Tous les comptes ont été réinitialisés.');
           },
         },
       ]
@@ -30,19 +30,19 @@ export default function DashboardScreen({ navigation, accounts, onReset }) {
     <View style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.safeTop}>
         <View style={styles.header}>
-          <Text style={styles.greeting}>Good morning</Text>
+          <Text style={styles.greeting}>Bonjour</Text>
           <Text style={styles.title}>Amira Benali</Text>
         </View>
       </SafeAreaView>
 
       <View style={styles.totalCard}>
-        <Text style={styles.totalLabel}>Total Balance</Text>
+        <Text style={styles.totalLabel}>Patrimoine Total</Text>
         <Text style={styles.totalAmount}>
           {totalBalance.toLocaleString('fr-FR', {
             minimumFractionDigits: 2,
           })} MAD
         </Text>
-        <Text style={styles.totalSub}>{accounts.length} active account{accounts.length !== 1 ? 's' : ''}</Text>
+        <Text style={styles.totalSub}>{accounts.length} compte{accounts.length !== 1 ? 's' : ''} actif{accounts.length !== 1 ? 's' : ''}</Text>
       </View>
 
       <FlatList
@@ -56,11 +56,11 @@ export default function DashboardScreen({ navigation, accounts, onReset }) {
         )}
         contentContainerStyle={styles.list}
         ListHeaderComponent={
-          <Text style={styles.sectionTitle}>Your Accounts</Text>
+          <Text style={styles.sectionTitle}>Sélectionnez un compte</Text>
         }
         ListFooterComponent={
           <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
-            <Text style={styles.resetBtnText}>Reset Accounts</Text>
+            <Text style={styles.resetBtnText}>Réinitialiser les comptes</Text>
           </TouchableOpacity>
         }
       />

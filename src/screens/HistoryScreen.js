@@ -34,8 +34,8 @@ export default function HistoryScreen({ accounts }) {
     <View style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.safeTop}>
         <View style={styles.header}>
-          <Text style={styles.title}>Transaction History</Text>
-          <Text style={styles.subtitle}>{allTransactions.length} transaction{allTransactions.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.title}>Historique des opérations</Text>
+          <Text style={styles.subtitle}>{allTransactions.length} opération{allTransactions.length !== 1 ? 's' : ''}</Text>
         </View>
       </SafeAreaView>
 
@@ -49,7 +49,7 @@ export default function HistoryScreen({ accounts }) {
           </View>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No transactions in history.</Text>
+          <Text style={styles.empty}>Aucune opération dans l'historique.</Text>
         }
         contentContainerStyle={styles.list}
       />

@@ -19,7 +19,7 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
   if (!account) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.textSecondary }}>Account not found.</Text>
+        <Text style={{ color: colors.textSecondary }}>Compte introuvable.</Text>
       </View>
     );
   }
@@ -31,34 +31,36 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
     const numAmount = parseFloat(amount);
 
     if (!label.trim()) {
-      Alert.alert('Missing field', 'Please enter a label.');
+      Alert.alert('Champ manquant', 'Veuillez saisir un libellé.');
       return;
     }
     if (isNaN(numAmount) || numAmount <= 0) {
-      Alert.alert('Invalid amount', 'Please enter a positive amount.');
-      return;
-    }
-    if (mode === 'debit' && numAmount > account.balance) {
-      Alert.alert(
-        'Insufficient balance',
-        `Your balance is ${account.balance.toLocaleString('fr-FR')} MAD. Operation rejected.`
-      );
+      Alert.alert('Montant invalide', 'Veuillez saisir un montant positif.');
       return;
     }
 
-    const confirmTitle = mode === 'debit' ? 'Confirm Debit' : 'Confirm Credit';
-
+    const confirmTitle = mode === 'debit' ? 'Confirmer le Débit' : 'Confirmer le Crédit';
     const confirmMessage = mode === 'debit'
-      ? `You are about to debit ${numAmount.toLocaleString('fr-FR')} MAD.\nLabel: "${label}"\n\nNew balance: ${(account.balance - numAmount).toLocaleString('fr-FR')} MAD.`
-      : `You are about to credit ${numAmount.toLocaleString('fr-FR')} MAD.\nLabel: "${label}"\n\nNew balance: ${(account.balance + numAmount).toLocaleString('fr-FR')} MAD.`;
+      ? `Vous allez débiter ${numAmount.toLocaleString('fr-FR')} MAD.\nLibellé : "${label}"`
+      : `Vous allez créditer ${numAmount.toLocaleString('fr-FR')} MAD.\nLibellé : "${label}"`;
 
     Alert.alert(confirmTitle, confirmMessage, [
-      { text: 'Cancel', style: 'cancel' },
+      { text: 'Annuler', style: 'cancel' },
       {
-        text: 'Confirm',
+        text: 'Confirmer',
         onPress: () => {
-          if (mode === 'debit') onDebit(accountId, numAmount, label);
-          else onCredit(accountId, numAmount, label);
+          if (mode === 'debit') {
+            const success = onDebit(accountId, numAmount, label);
+            if (!success) {
+              Alert.alert(
+                'Solde insuffisant',
+                `Votre solde est de ${account.balance.toLocaleString('fr-FR')} MAD. Opération rejetée.`
+              );
+              return;
+            }
+          } else {
+            onCredit(accountId, numAmount, label);
+          }
           setAmount('');
           setLabel('');
           setMode(null);
@@ -86,20 +88,20 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
                 <View style={styles.headerInfo}>
                   <Text style={styles.accountName}>{account.label}</Text>
                   <Text style={styles.accountType}>
-                    {account.type === 'courant' ? 'Current Account' : account.type === 'epargne' ? 'Savings' : 'Professional'}
+                    {account.type === 'courant' ? 'Compte Courant' : account.type === 'epargne' ? 'Épargne' : 'Professionnel'}
                   </Text>
                 </View>
               </View>
             </SafeAreaView>
 
             <View style={styles.balanceCard}>
-              <Text style={styles.balanceLabel}>Current Balance</Text>
+              <Text style={styles.balanceLabel}>Solde actuel</Text>
               <Text style={styles.balance}>
                 {account.balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} MAD
               </Text>
               {isLowBalance && (
                 <View style={styles.warningBadge}>
-                  <Text style={styles.warningText}>Low balance</Text>
+                  <Text style={styles.warningText}>Solde bas</Text>
                 </View>
               )}
             </View>
@@ -109,7 +111,7 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
                 style={[styles.actionBtn, isZeroBalance && styles.actionBtnDisabled]}
                 onPress={() => {
                   if (isZeroBalance) {
-                    Alert.alert('Zero balance', 'Your balance is 0 MAD. Cannot debit.');
+                    Alert.alert('Solde nul', 'Votre solde est à 0 MAD. Impossible d\'effectuer un débit.');
                     return;
                   }
                   setMode(mode === 'debit' ? null : 'debit');
@@ -117,7 +119,7 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
                 disabled={isZeroBalance}
               >
                 <Text style={styles.actionIcon}>−</Text>
-                <Text style={styles.actionLabel}>Debit</Text>
+                <Text style={styles.actionLabel}>Débit</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -125,7 +127,7 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
                 onPress={() => setMode(mode === 'credit' ? null : 'credit')}
               >
                 <Text style={[styles.actionIcon, { color: colors.success }]}>+</Text>
-                <Text style={[styles.actionLabel, { color: colors.success }]}>Credit</Text>
+                <Text style={[styles.actionLabel, { color: colors.success }]}>Crédit</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -133,19 +135,19 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
                 onPress={() => navigation.navigate('Transfer', { fromAccountId: accountId })}
               >
                 <Text style={[styles.actionIcon, { color: colors.accent }]}>→</Text>
-                <Text style={[styles.actionLabel, { color: colors.accent }]}>Transfer</Text>
+                <Text style={[styles.actionLabel, { color: colors.accent }]}>Virement</Text>
               </TouchableOpacity>
             </View>
 
             {mode && (
               <View style={styles.form}>
                 <Text style={styles.formTitle}>
-                  {mode === 'debit' ? 'New Debit' : 'New Credit'}
+                  {mode === 'debit' ? 'Nouveau Débit' : 'Nouveau Crédit'}
                 </Text>
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={styles.input}
-                    placeholder="Transaction label"
+                    placeholder="Libellé de l'opération"
                     placeholderTextColor={colors.textTertiary}
                     value={label}
                     onChangeText={setLabel}
@@ -154,7 +156,7 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={styles.input}
-                    placeholder="Amount in MAD"
+                    placeholder="Montant en MAD"
                     placeholderTextColor={colors.textTertiary}
                     value={amount}
                     onChangeText={setAmount}
@@ -168,16 +170,16 @@ export default function AccountDetailScreen({ route, navigation, accounts, onDeb
                   ]}
                   onPress={handleOperation}
                 >
-                  <Text style={styles.submitBtnText}>Confirm</Text>
+                  <Text style={styles.submitBtnText}>Valider</Text>
                 </TouchableOpacity>
               </View>
             )}
 
-            <Text style={styles.historyTitle}>Transaction History</Text>
+            <Text style={styles.historyTitle}>Historique des opérations</Text>
           </View>
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>No transactions recorded.</Text>
+          <Text style={styles.empty}>Aucune opération enregistrée.</Text>
         }
       />
     </KeyboardAvoidingView>

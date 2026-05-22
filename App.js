@@ -76,10 +76,12 @@ export default function App() {
   const [accounts, setAccounts] = useState(initialAccounts);
 
   const handleDebit = (accountId, amount, label) => {
+    const account = accounts.find(a => a.id === accountId);
+    if (!account || account.balance < amount) return false;
+
     setAccounts(prev =>
       prev.map(acc => {
         if (acc.id !== accountId) return acc;
-        if (acc.balance < amount) return acc;
         const newTransaction = {
           id: 'T' + Date.now(),
           type: 'debit',
@@ -94,6 +96,7 @@ export default function App() {
         };
       })
     );
+    return true;
   };
 
   const handleCredit = (accountId, amount, label) => {
@@ -125,7 +128,7 @@ export default function App() {
             id: 'T' + Date.now() + '_out',
             type: 'virement_sortant',
             amount,
-            label: label || `Transfer to ${prev.find(a => a.id === toId)?.label || 'account'}`,
+            label: label || `Virement vers ${prev.find(a => a.id === toId)?.label || 'compte'}`,
             date: new Date().toLocaleDateString('fr-FR'),
           };
           return {
@@ -139,7 +142,7 @@ export default function App() {
             id: 'T' + Date.now() + '_in',
             type: 'virement_entrant',
             amount,
-            label: label || `Transfer from ${prev.find(a => a.id === fromId)?.label || 'account'}`,
+            label: label || `Virement de ${prev.find(a => a.id === fromId)?.label || 'compte'}`,
             date: new Date().toLocaleDateString('fr-FR'),
           };
           return {
@@ -184,7 +187,7 @@ export default function App() {
           <Tab.Screen
             name="AccountsTab"
             options={{
-              tabBarLabel: 'Accounts',
+              tabBarLabel: 'Comptes',
               tabBarIcon: ({ focused }) => <WalletIcon focused={focused} />,
             }}
           >
@@ -202,7 +205,7 @@ export default function App() {
           <Tab.Screen
             name="HistoryTab"
             options={{
-              tabBarLabel: 'History',
+              tabBarLabel: 'Historique',
               tabBarIcon: ({ focused }) => <ClockIcon focused={focused} />,
             }}
           >

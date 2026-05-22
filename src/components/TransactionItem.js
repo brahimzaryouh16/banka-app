@@ -4,10 +4,10 @@ import { colors } from '../theme/colors';
 import { spacing, borderRadius, rf, isSmallDevice } from '../theme';
 
 const TYPE_CONFIG = {
-  credit:            { label: 'Credit',           color: colors.success, sign: '+' },
-  debit:             { label: 'Debit',             color: colors.danger,  sign: '-' },
-  virement_entrant:  { label: 'Incoming Transfer', color: colors.success, sign: '+' },
-  virement_sortant:  { label: 'Outgoing Transfer', color: colors.danger,  sign: '-' },
+  credit:            { label: 'Crédit',            color: colors.success, sign: '+' },
+  debit:             { label: 'Débit',             color: colors.danger,  sign: '-' },
+  virement_entrant:  { label: 'Virement reçu',     color: colors.success, sign: '+' },
+  virement_sortant:  { label: 'Virement émis',     color: colors.danger,  sign: '-' },
 };
 
 export default function TransactionItem({ transaction }) {
@@ -18,7 +18,7 @@ export default function TransactionItem({ transaction }) {
       <View style={[styles.dot, { backgroundColor: config.color }]} />
       <View style={styles.info}>
         <Text style={styles.label} numberOfLines={1}>{transaction.label}</Text>
-        <Text style={styles.meta}>{config.label} &middot; {transaction.date}</Text>
+        <Text style={styles.meta}>{config.label} · {transaction.date}</Text>
       </View>
       <Text style={[styles.amount, { color: config.color }]}>
         {config.sign}{transaction.amount.toLocaleString('fr-FR')} MAD

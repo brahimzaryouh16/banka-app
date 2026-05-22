@@ -19,7 +19,7 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
   if (!sourceAccount) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.textSecondary }}>Source account not found.</Text>
+        <Text style={{ color: colors.textSecondary }}>Compte source introuvable.</Text>
       </View>
     );
   }
@@ -28,21 +28,21 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
     const numAmount = parseFloat(amount);
 
     if (!selectedDestId) {
-      Alert.alert('Missing destination', 'Please select a destination account.');
+      Alert.alert('Destinataire manquant', 'Veuillez sélectionner un compte destinataire.');
       return;
     }
     if (!label.trim()) {
-      Alert.alert('Missing field', 'Please enter a transfer label.');
+      Alert.alert('Champ manquant', 'Veuillez saisir un libellé pour le virement.');
       return;
     }
     if (isNaN(numAmount) || numAmount <= 0) {
-      Alert.alert('Invalid amount', 'Please enter a positive amount.');
+      Alert.alert('Montant invalide', 'Veuillez saisir un montant positif.');
       return;
     }
     if (numAmount > sourceAccount.balance) {
       Alert.alert(
-        'Insufficient balance',
-        `Your ${sourceAccount.label} balance is ${sourceAccount.balance.toLocaleString('fr-FR')} MAD. Transfer rejected.`
+        'Solde insuffisant',
+        `Votre solde sur ${sourceAccount.label} est de ${sourceAccount.balance.toLocaleString('fr-FR')} MAD.\nLe virement de ${numAmount.toLocaleString('fr-FR')} MAD est rejeté.`
       );
       return;
     }
@@ -50,15 +50,15 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
     const destAccount = accounts.find(a => a.id === selectedDestId);
 
     Alert.alert(
-      'Confirm Transfer',
-      `From: ${sourceAccount.label}\nTo: ${destAccount.label}\nAmount: ${numAmount.toLocaleString('fr-FR')} MAD\nLabel: "${label}"`,
+      'Confirmer le Virement',
+      `De : ${sourceAccount.label}\nVers : ${destAccount.label}\nMontant : ${numAmount.toLocaleString('fr-FR')} MAD\nLibellé : "${label}"`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Confirm',
+          text: 'Confirmer',
           onPress: () => {
             onTransfer(fromAccountId, selectedDestId, numAmount, label);
-            Alert.alert('Transfer complete', `${numAmount.toLocaleString('fr-FR')} MAD sent to ${destAccount.label}.`);
+            Alert.alert('Virement effectué', `${numAmount.toLocaleString('fr-FR')} MAD transférés vers ${destAccount.label}.`);
             setAmount('');
             setLabel('');
             setSelectedDestId(null);
@@ -79,14 +79,14 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Text style={styles.backArrow}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.topBarTitle}>Transfer</Text>
+          <Text style={styles.topBarTitle}>Virement</Text>
           <View style={[styles.backBtn, { opacity: 0 }]} />
         </View>
       </SafeAreaView>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.sourceCard}>
-          <Text style={styles.sourceLabel}>From</Text>
+          <Text style={styles.sourceLabel}>De</Text>
           <View style={styles.sourceRow}>
             <View style={styles.sourceBadge}>
               <Text style={styles.sourceBadgeText}>
@@ -103,7 +103,7 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Destination Account</Text>
+          <Text style={styles.sectionTitle}>Compte destinataire</Text>
           {otherAccounts.map(acc => (
             <TouchableOpacity
               key={acc.id}
@@ -139,11 +139,11 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
         </View>
 
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Transfer Details</Text>
+          <Text style={styles.sectionTitle}>Détails du virement</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder="Transfer label"
+              placeholder="Libellé du virement"
               placeholderTextColor={colors.textTertiary}
               value={label}
               onChangeText={setLabel}
@@ -152,7 +152,7 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder="Amount in MAD"
+              placeholder="Montant en MAD"
               placeholderTextColor={colors.textTertiary}
               value={amount}
               onChangeText={setAmount}
@@ -161,7 +161,7 @@ export default function TransferScreen({ route, navigation, accounts, onTransfer
           </View>
 
           <TouchableOpacity style={styles.transferBtn} onPress={handleTransfer}>
-            <Text style={styles.transferBtnText}>Send Transfer</Text>
+            <Text style={styles.transferBtnText}>Effectuer le virement</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
