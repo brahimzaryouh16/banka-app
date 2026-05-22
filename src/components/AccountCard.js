@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
-import { rf, isSmallDevice } from '../theme';
+import { spacing, borderRadius, rf, isSmallDevice } from '../theme';
 
 export default function AccountCard({ account, onPress }) {
   const isPositive = account.balance > 0;
@@ -42,24 +42,24 @@ export default function AccountCard({ account, onPress }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: isSmallDevice ? 14 : 20,
-    marginHorizontal: 16,
-    marginVertical: 5,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.xs,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: isSmallDevice ? 10 : 14,
+    marginBottom: spacing.sm,
   },
   badge: {
     width: isSmallDevice ? 34 : 40,
     height: isSmallDevice ? 34 : 40,
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     backgroundColor: colors.accentDim,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: spacing.sm,
   },
   badgeText: {
     fontSize: rf(15),
@@ -78,13 +78,13 @@ const styles = StyleSheet.create({
   iban: {
     fontSize: rf(10),
     color: colors.textSecondary,
-    marginTop: 1,
+    marginTop: spacing.xs,
     letterSpacing: 0.3,
   },
   divider: {
     height: 1,
     backgroundColor: colors.border,
-    marginBottom: isSmallDevice ? 10 : 14,
+    marginBottom: spacing.sm,
   },
   balanceSection: {
     flexDirection: 'row',
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   txCount: {
     fontSize: rf(10),
     color: colors.textTertiary,
-    marginTop: isSmallDevice ? 6 : 10,
+    marginTop: spacing.sm,
     textAlign: 'right',
     fontWeight: '500',
   },

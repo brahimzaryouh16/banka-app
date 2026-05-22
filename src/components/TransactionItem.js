@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
-import { rf, isSmallDevice } from '../theme';
+import { spacing, borderRadius, rf, isSmallDevice } from '../theme';
 
 const TYPE_CONFIG = {
   credit:            { label: 'Credit',           color: colors.success, sign: '+' },
@@ -31,18 +31,18 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: isSmallDevice ? 10 : 14,
-    paddingHorizontal: 14,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     backgroundColor: colors.surface,
-    marginHorizontal: 16,
-    marginVertical: 2,
-    borderRadius: 12,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.xs,
+    borderRadius: borderRadius.md,
   },
   dot: {
     width: isSmallDevice ? 6 : 8,
     height: isSmallDevice ? 6 : 8,
     borderRadius: 4,
-    marginRight: 10,
+    marginRight: spacing.sm,
   },
   info: {
     flex: 1,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: rf(11),
     color: colors.textSecondary,
-    marginTop: 1,
+    marginTop: spacing.xs,
     fontWeight: '500',
   },
   amount: {

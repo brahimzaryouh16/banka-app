@@ -31,7 +31,7 @@ const navTheme = {
   },
 };
 
-const tabHeight = isSmallDevice ? 56 : 65;
+const tabHeight = isSmallDevice ? 56 : 62;
 
 function AccountsStack({ accounts, onDebit, onCredit, onTransfer, onReset }) {
   return (
@@ -168,15 +168,15 @@ export default function App() {
               borderTopColor: colors.border,
               borderTopWidth: 1,
               height: tabHeight,
-              paddingBottom: isSmallDevice ? 6 : 10,
-              paddingTop: isSmallDevice ? 4 : 8,
+              paddingBottom: isSmallDevice ? 6 : 8,
+              paddingTop: isSmallDevice ? 4 : 6,
             },
             tabBarActiveTintColor: colors.accent,
             tabBarInactiveTintColor: colors.textTertiary,
             tabBarLabelStyle: {
-              fontSize: isSmallDevice ? 9 : 11,
+              fontSize: isSmallDevice ? 9 : 10,
               fontWeight: '700',
-              letterSpacing: 0.3,
+              letterSpacing: 0.5,
               textTransform: 'uppercase',
             },
           }}

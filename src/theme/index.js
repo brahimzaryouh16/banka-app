@@ -8,9 +8,22 @@ export function rf(size) {
   return isSmallDevice ? Math.round(size * 0.85) : size;
 }
 
-export function rp(size) {
-  return isSmallDevice ? Math.round(size * 0.75) : size;
-}
+export const spacing = {
+  xs: isSmallDevice ? 4 : 4,
+  sm: isSmallDevice ? 8 : 10,
+  md: isSmallDevice ? 14 : 18,
+  lg: isSmallDevice ? 20 : 26,
+  xl: isSmallDevice ? 26 : 34,
+  xxl: isSmallDevice ? 38 : 50,
+};
+
+export const borderRadius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  pill: 999,
+};
 
 export const typography = StyleSheet.create({
   screenTitle: {
@@ -51,22 +64,6 @@ export const typography = StyleSheet.create({
     letterSpacing: -0.5,
   },
 });
-
-export const spacing = {
-  xs: 4,
-  sm: isSmallDevice ? 6 : 8,
-  md: isSmallDevice ? 12 : 16,
-  lg: isSmallDevice ? 18 : 24,
-  xl: isSmallDevice ? 24 : 32,
-  xxl: isSmallDevice ? 36 : 48,
-};
-
-export const borderRadius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  pill: 999,
-};
 
 export const shadows = {
   none: {

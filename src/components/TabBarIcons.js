@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
-import { isSmallDevice } from '../theme';
+import { isSmallDevice, spacing } from '../theme';
 
 const s = isSmallDevice ? 18 : 22;
 const lw = isSmallDevice ? 1.8 : 2;
@@ -59,8 +59,8 @@ function ClockIcon({ focused }) {
 
 const styles = StyleSheet.create({
   box: {
-    width: s + 8,
-    height: s + 8,
+    width: s + spacing.sm,
+    height: s + spacing.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     borderWidth: lw,
     justifyContent: 'center',
-    paddingHorizontal: 3,
+    paddingHorizontal: spacing.xs,
     gap: 2,
   },
   cardLine: {

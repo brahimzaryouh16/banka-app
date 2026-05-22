@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   header: {
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
     paddingTop: isSmallDevice ? spacing.md : spacing.lg,
     paddingBottom: spacing.sm,
   },
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: rf(13),
     color: colors.textSecondary,
-    marginTop: 2,
+    marginTop: spacing.xs,
     fontWeight: '500',
   },
   list: {
@@ -88,15 +88,15 @@ const styles = StyleSheet.create({
   accountTag: {
     fontSize: rf(10),
     color: colors.textTertiary,
-    paddingHorizontal: spacing.md + 4,
-    paddingTop: 10,
-    paddingBottom: 3,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
     fontWeight: '600',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   empty: {
-    padding: 30,
+    padding: spacing.lg,
     textAlign: 'center',
     color: colors.textTertiary,
     fontSize: rf(13),
